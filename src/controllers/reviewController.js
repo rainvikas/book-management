@@ -108,7 +108,7 @@ const updateReview = async function (req, res) {
             let reviewDetails = await ReviewModel.find({ bookId: bookId, isDeleted: false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
             let bookData = bookDetails.toObject()
             bookData.reviewsData = reviewDetails
-            return res.status(201).send({ status: true, msg: "review updated successfully", numberOfReviews: reviewDetails.length, data: bookData })
+            return res.status(200).send({ status: true, msg: "review updated successfully", numberOfReviews: reviewDetails.length, data: bookData })
         }
 
     }
@@ -138,9 +138,9 @@ const deleteReview = async function (req, res) {
             return res.status(404).send({ status: false, msg: "review doesn't exist with this reviewId" })
         }
         else {
-            let reviewToBeDeleted = await ReviewModel.updateMany({ _id: reviewId, isDeleted: false }, { $set: { isDeleted: true } })
-            let bookReviewToBeDeleted = await BookModel.updateMany({ _id: reviewDetails.bookId }, { $inc: { reviews: -1 } })
-            return res.status(201).send({ status: true, msg: "review deleted successfully" })
+            let reviewToBeDeleted = await ReviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: false }, { $set: { isDeleted: true } })
+            let bookReviewToBeDeleted = await BookModel.findOneAndUpdate({ _id: reviewDetails.bookId }, { $inc: { reviews: -1 } })
+            return res.status(200).send({ status: true, msg: "review deleted successfully" })
         }
     }
     catch (error) {

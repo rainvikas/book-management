@@ -50,11 +50,11 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, msg: "password length must be in between 8 to 15 and must contain atleast one number and uppercase and lowercase letter" })
         }
 
-        isPhoneAlreadyUsed = await UserModel.findOne({ phone })
+         let isPhoneAlreadyUsed = await UserModel.findOne({ phone })
         if (isPhoneAlreadyUsed) {
             return res.status(400).send({ status: false, msg: " phone no. is already used, please provide another phone no." })
         }
-        isEmailAlreadyUsed = await UserModel.findOne({ email })
+        let isEmailAlreadyUsed = await UserModel.findOne({ email })
         if (isEmailAlreadyUsed) {
             return res.status(400).send({ status: false, msg: " eamilId is already used, please provide another emailId" })
         }
@@ -83,7 +83,7 @@ const loginUser = async function (req, res) {
             let iat = Math.floor(Date.now() / 1000)
             let token = jwt.sign({ userId: createdUser._id, exp: iat + (60 * 30) }, "project-3_group-9")
             res.setHeader("x-auth-token", token);
-            res.status(201).send({ msg: " loged in successfully", data: token })
+            res.status(200).send({ msg: " loged in successfully", data: token })
         }
     }
     catch (error) {

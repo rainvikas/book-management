@@ -3,6 +3,7 @@ const UserModel = require('../models/userModel')
 const ReviewModel = require('../models/reviewModel')
 const mongoose = require("mongoose")
 const ObjectId = mongoose.Types.ObjectId
+const jwt = require('jsonwebtoken')
 
 
 const isValid = function (value) {
@@ -10,10 +11,6 @@ const isValid = function (value) {
     if (typeof value === 'string' && value.trim().length === 0) return false
     return true;
 }
-// const isValidValues = function (value) {
-//     if (typeof value === 'string' && value.trim().length === 0) return false
-//     return true;
-// }
 
 const isValidObjectId = function (objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
@@ -24,7 +21,7 @@ const createBook = async function (req, res) {
 
         let data = req.body
 
-        let { title, excerpt, userId, ISBN, category, subCategory, reviews, isDeleted, deletedAt, releasedAt } = data
+        let { title, excerpt, userId, ISBN, category, subCategory, reviews, isDeleted, deletedAt, releasedAt, bookCover } = data
 
         if (Object.keys(data).length == 0) {
             return res.status(400).send({ status: false, msg: "BAD REQUEST" })
@@ -58,6 +55,16 @@ const createBook = async function (req, res) {
         }
         if (!(/^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/.test(releasedAt))) {
             return res.status(400).send({ status: false, msg: "date is not in the format of YYYY-MM-DD " })
+        }
+        if (data.hasOwnProperty('bookCover')) {
+            if (!isValid(bookCover)) {
+                return res.status(400).send({ status: false, msg: 'enter bookCover in the proper format' })
+            }
+        }
+        let token = req.headers["x-auth-token"]
+        let decodedToken = jwt.verify(token, "project-3_group-9")
+        if (decodedToken.userId != userId) {
+            return res.status(403).send({ status: false, msg: "you are not authorized" })
         }
 
         let isTitleAlreadyUsed = await BookModel.findOne({ title })
@@ -197,7 +204,7 @@ const updateBook = async function (req, res) {
         }
         else {
             let updatedBookDetails = await BookModel.findOneAndUpdate({ _id: bookId, isDeleted: false }, booksToBeUpdated, { new: true })
-            return res.status(201).send({ status: true, data: updatedBookDetails })
+            return res.status(200).send({ status: true, data: updatedBookDetails })
         }
     }
     catch (error) {
@@ -217,7 +224,7 @@ const deleteBook = async function (req, res) {
             return res.status(404).send({ status: false, msg: "book not exist" })
         }
         else {
-            let bookToBeDeleted = await BookModel.updateMany({ _id: bookId, isDeleted: false }, { $set: { isDeleted: true }, deletedAt: Date.now() })
+            let bookToBeDeleted = await BookModel.findOneAndUpdate({ _id: bookId, isDeleted: false }, { $set: { isDeleted: true }, deletedAt: Date.now() })
             return res.status(200).send({ status: true, msg: "book deleted successfully" })
         }
 

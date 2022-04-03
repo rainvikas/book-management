@@ -1,23 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/userController')
-const BookController = require('../controllers/bookController');
-const ReviewController = require('../controllers/reviewController');
+const BookController = require('../controllers/bookController')
+const ReviewController = require('../controllers/reviewController')
+const Middleware = require('../middleware/auth')
 
 
 router.post('/register', UserController.createUser)
 
 router.post('/login', UserController.loginUser)
 
-router.post('/books', BookController.createBook)
+router.post('/books',Middleware.authentication, BookController.createBook)
 
-router.get('/getbooks', BookController.getBooks)
+router.get('/getbooks',Middleware.authentication, BookController.getBooks)
 
-router.get('/books/:bookId', BookController.getBookById)
+router.get('/books/:bookId',Middleware.authentication, BookController.getBookById)
 
-router.put('/books/:bookId', BookController.updateBook)
+router.put('/books/:bookId', Middleware.authentication,Middleware.authorization,BookController.updateBook)
 
-router.delete('/books/:bookId', BookController.deleteBook)
+router.delete('/books/:bookId',Middleware.authentication,Middleware.authorization, BookController.deleteBook)
 
 router.post('/books/:bookId/review', ReviewController.createReview)
 
